@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PasajeFácil - App Todo en Uno</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <style>
+        :root {
+            --primary: #FFD000;
+            --primary-dark: #E6B800;
+            --secondary: #1A2530;
+            --text-dark: #2C3E50;
+            --bg-light: #F8F9FA;
+            --success: #2ECC71;
+            --danger: #E74C3C;
+            --paypal: #003087;
+            --binance: #F3BA2F;
+            --zinli: #7B2CBF;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        /* Contenedor simulando el Teléfono Celular */
+        .phone-container {
+            width: 100%;
+            max-width: 380px;
+            height: 780px;
+            background-color: var(--bg-light);
+            border-radius: 32px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            border: 8px solid var(--secondary);
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Barra de estado */
+        .status-bar {
+            background-color: var(--secondary);
+            color: white;
+            padding: 6px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            font-weight: 500;
+            z-index: 101;
+        }
+
+        /* PANTALLA DE LOGUEO / REGISTRO (AUTH) */
+        .auth-screen {
+            position: absolute;
+            top: 25px;
+            left: 0;
+            width: 100%;
+            height: calc(100% - 25px);
+            background-color: var(--secondary);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 25px;
+            color: white;
+            overflow-y: auto;
+        }
+
+        .auth-brand {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .auth-brand .material-icons-round {
+            font-size: 48px;
+            color: var(--primary);
+        }
+
+        .auth-brand h2 {
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        .auth-brand span {
+            color: var(--primary);
+        }
+
+        .auth-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .auth-box h3 {
+            font-size: 16px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+        }
+
+        .auth-toggle-text {
+            font-size: 12px;
+            text-align: center;
+            margin-top: 15px;
+            color: #A0AEC0;
+        }
+
+        .auth-toggle-text span {
+            color: var(--primary);
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
+        /* Encabezado Principal */
+        .app-header {
+            background-color: var(--secondary);
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-area h1 {
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .logo-area span {
+            color: var(--primary);
+        }
+
+        /* Área de Contenido con Scroll */
+        .app-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Secciones Dinámicas */
+        .view-section {
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+            height: 100%;
+        }
+
+        .view-section.active {
+            display: flex;
+        }
+
+        /* Tarjeta de Saldo */
+        .balance-card {
+            background: linear-gradient(135deg, var(--primary) 0%, #FFAA00 100%);
+            border-radius: 15px;
+            padding: 20px;
+            color: var(--secondary);
+            box-shadow: 0 4px 12px rgba(255, 208, 0, 0.2);
+        }
+
+        .balance-amount {
+            font-size: 30px;
+            font-weight: 800;
+            margin-top: 5px;
+        }
+
+        /* Tarjetas Blancas de Contenido */
+        .card-white {
+            background-color: white;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .proximity-card {
+            border: 2px solid var(--primary);
+        }
+
+        .pulse-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: bold;
+            color: var(--text-dark);
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #2ECC71;
+            border-radius: 50%;
+            animation: pulse-animation 1.5s infinite;
+        }
+
+        @keyframes pulse-animation {
+            0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); }
+            100% { box-shadow: 0 0 0 8px rgba(46, 204, 113, 0); }
+        }
+
+        .fare-input-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #F8F9FA;
+            padding: 10px 15px;
+            border-radius: 12px;
+            border: 1px dashed #CBD5E0;
+            margin: 5px 0;
+        }
+
+        .fare-label {
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--secondary);
+        }
+
+        .input-fare {
+            width: 90px;
+            border: none;
+            background: transparent;
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--secondary);
+            text-align: right;
+            outline: none;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        /* Contenedor del Escáner de Cámara */
+        #qr-reader-container {
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            background: #000;
+            padding: 10px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid var(--primary);
+        }
+
+        #qr-interactive {
+            width: 100% !important;
+            border: none !important;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        /* Botones */
+        .btn-main {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-yellow {
+            background-color: var(--primary);
+            color: var(--secondary);
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .btn-secondary-action {
+            background-color: #EDF2F7;
+            color: var(--secondary);
+            border: 1px solid #CBD5E0;
+        }
+
+        /* Grid de Métodos de Pago */
+        .methods-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        .btn-method {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            border-radius: 12px;
+            border: 1px solid #E2E8F0;
+            background: white;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--secondary);
+            cursor: pointer;
+        }
+
+        .btn-method .icon-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            color: white;
+        }
+
+        .method-pm .icon-wrap { background-color: #2ECC71; }
+        .method-trans .icon-wrap { background-color: #3498DB; }
+        .method-paypal .icon-wrap { background-color: var(--paypal); }
+        .method-binance .icon-wrap { background-color: #F0B90B; color: #1E2329 !important; }
+        .method-zinli .icon-wrap { background-color: var(--zinli); }
+
+        .deposit-form-box {
+            display: none;
+            border-top: 2px solid var(--secondary);
+            margin-top: 15px;
+            padding-top: 15px;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Caja de datos modular independiente */
+        .info-transfer-data {
+            background: #F0F4F8;
+            padding: 14px;
+            border-radius: 14px;
+            color: var(--secondary);
+            border: 2px solid #D1DBE5;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .data-row-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 1px solid #E2E8F0;
+        }
+
+        .data-text-area {
+            display: flex;
+            flex-direction: column;
+            width: 75%;
+        }
+
+        .data-label-micro {
+            font-size: 10px;
+            color: #718096;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .data-value-main {
+            font-size: 15px;
+            font-weight: 800;
+            color: #1A202C;
+            word-break: break-all;
+        }
+
+        .btn-copy-action {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Inputs y File Upload */
+        .file-upload-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .file-upload-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background-color: #EDF2F7;
+            border: 2px dashed #CBD5E0;
+            padding: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #4A5568;
+            font-weight: bold;
+        }
+
+        .input-file-hidden {
+            display: none;
+        }
+
+        .input-custom {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            font-size: 14px;
+            background-color: #FAFAFA;
+            outline: none;
+        }
+
+        .input-dark {
+            background-color: #2C3E50;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+        }
+        .input-dark::placeholder { color: #A0AEC0; }
+
+        /* Listado de Notificaciones Interactivas */
+        .notification-item {
+            display: flex;
+            gap: 12px;
+            padding: 14px;
+            border-bottom: 1px solid #EDF2F7;
+            background: white;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .notification-item:active { background: #EDF2F7; }
+
+        .notification-icon {
+            background-color: #FFF9E6;
+            color: #D4AF37;
+            padding: 8px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            height: fit-content;
+        }
+
+        /* Interfaz Estilo Chat */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background: #E5DDD5;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid #CBD5E0;
+        }
+
+        .chat-messages-area {
+            flex: 1;
+            padding: 12px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chat-bubble {
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.4;
+            position: relative;
+            word-break: break-word;
+        }
+
+        .chat-bubble.system-agent {
+            background: white;
+            align-self: flex-start;
+            color: var(--secondary);
+            border-top-left-radius: 2px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .chat-bubble.user-client {
+            background: #DCF8C6;
+            align-self: flex-end;
+            color: #1A202C;
+            border-top-right-radius: 2px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .chat-meta-time {
+            font-size: 9px;
+            color: #A0AEC0;
+            text-align: right;
+            margin-top: 4px;
+            display: block;
+        }
+
+        .chat-input-bar {
+            background: #F0F0F0;
+            padding: 8px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            border-top: 1px solid #E2E8F0;
+        }
+
+        .input-chat-message {
+            flex: 1;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 20px;
+            outline: none;
+            font-size: 13px;
+            background: white;
+        }
+
+        .btn-send-chat {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        /* APARTADO DE PERFIL AVANZADO */
+        .profile-avatar-container {
+            position: relative;
+            width: 90px;
+            height: 90px;
+            margin: 10px auto;
+            cursor: pointer;
+        }
+
+        .profile-avatar {
+            width: 100%;
+            height: 100%;
+            background-color: var(--primary);
+            color: var(--secondary);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 32px;
+            font-weight: bold;
+            overflow: hidden;
+            border: 3px solid white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            background-size: cover;
+            background-position: center;
+        }
+
+        .avatar-edit-badge {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: var(--secondary);
+            color: var(--primary);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .user-micro-id {
+            background: #EDF2F7;
+            color: var(--secondary);
+            font-size: 11px;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 5px;
+            border: 1px solid #CBD5E0;
+            letter-spacing: 0.5px;
+        }
+
+        .profile-form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            text-align: left;
+            margin-bottom: 8px;
+        }
+
+        .profile-form-group label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #718096;
+            text-transform: uppercase;
+            padding-left: 4px;
+        }
+
+        .btn-logout {
+            background-color: transparent;
+            color: var(--danger);
+            border: 2px solid var(--danger);
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 15px;
+            transition: all 0.2s;
+        }
+
+        .btn-logout:active {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        /* Overlays */
+        .screen-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 300;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: white;
+            text-align: center;
+        }
+
+        .success-screen { background-color: var(--success); }
+        .error-screen { background-color: var(--danger); }
+
+        .receipt-card {
+            background: white;
+            color: var(--secondary);
+            border-radius: 12px;
+            padding: 12px;
+            width: 100%;
+            margin-top: 15px;
+            font-size: 12px;
+            text-align: left;
+        }
+
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #EEE;
+        }
+
+        /* Barra de navegación inferior */
+        .nav-bar {
+            background-color: white;
+            border-top: 1px solid #E2E8F0;
+            padding: 8px 0;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #A0AEC0;
+            font-size: 10px;
+            cursor: pointer;
+            width: 20%;
+            font-weight: bold;
+        }
+
+        .nav-item.active { color: var(--secondary); }
+        .nav-item.active .material-icons-round { color: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <div class="phone-container">
+        <div class="status-bar">
+            <span id="phone-clock">12:10 PM</span>
+            <div><span class="material-icons-round" style="font-size: 12px;">wifi</span> LTE</div>
+        </div>
+
+        <div id="authScreenContainer" class="auth-screen">
+            <div class="auth-brand">
+                <span class="material-icons-round">directions_bus</span>
+                <h2>Pasaje<span>Fácil</span></h2>
+                <p style="font-size: 12px; color: #A0AEC0; margin-top: 4px;">Tu pasaporte de transporte inteligente</p>
+            </div>
+
+            <div id="loginFormBox" class="auth-box">
+                <h3>Iniciar Sesión</h3>
+                <input type="text" id="loginUsername" class="input-custom input-dark" placeholder="Usuario o Correo Electrónico">
+                <input type="password" id="loginPassword" class="input-custom input-dark" placeholder="Contraseña">
+                <button class="btn-main btn-yellow" onclick="handleLogin()">ENTRAR AL SISTEMA</button>
+                <p class="auth-toggle-text">¿No tienes cuenta? <span onclick="toggleAuthForms(true)">Regístrate aquí</span></p>
+            </div>
+
+            <div id="registerFormBox" class="auth-box" style="display: none;">
+                <h3>Crear Registro</h3>
+                <input type="text" id="regName" class="input-custom input-dark" placeholder="Nombre Completo (Ej: Gabriel López)">
+                <input type="email" id="regEmail" class="input-custom input-dark" placeholder="Correo Electrónico">
+                <input type="text" id="regUsername" class="input-custom input-dark" placeholder="Crea un Usuario único">
+                <input type="password" id="regPassword" class="input-custom input-dark" placeholder="Establece Contraseña">
+                <input type="text" id="regLocation" class="input-custom input-dark" value="San Joaquín, Carabobo" placeholder="Ubicación">
+                <button class="btn-main btn-yellow" onclick="handleRegister()">DARME DE ALTA</button>
+                <p class="auth-toggle-text">¿Ya tienes cuenta? <span onclick="toggleAuthForms(false)">Inicia sesión</span></p>
+            </div>
+        </div>
+        
+        <div class="app-header">
+            <div class="logo-area">
+                <span class="material-icons-round">directions_bus</span>
+                <h1>Pasaje<span>Fácil</span></h1>
+            </div>
+            <span class="material-icons-round" style="cursor: pointer;" onclick="switchTab('notifications')">notifications</span>
+        </div>
+
+        <div class="app-content">
+            
+            <div id="view-travel" class="view-section active">
+                <div class="balance-card">
+                    <p>Saldo en Cuenta</p>
+                    <div class="balance-amount">Bs. <span class="global-balance">0.00</span></div>
+                </div>
+
+                <div class="card-white proximity-card">
+                    <div class="pulse-header"><div class="pulse-dot"></div>SISTEMA DE VIAJE DIGITAL</div>
+                    <div class="fare-input-container">
+                        <span class="fare-label">MONTO DEL PASAJE:</span>
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <span style="font-size: 18px; font-weight: 800;">Bs.</span>
+                            <input type="number" id="travelFare" class="input-fare" value="20.00">
+                        </div>
+                    </div>
+                    
+                    <button class="btn-main btn-yellow" onclick="processPayment('Proximidad (Automático)', 'Unidad Cercana Detectada')">
+                        <span class="material-icons-round">bolt</span> PAGAR PASAJE AUTOMÁTICO
+                    </button>
+
+                    <div class="actions-grid">
+                        <button class="btn-main btn-secondary-action" id="btn-toggle-qr" onclick="startQRScanner()">
+                            <span class="material-icons-round">qr_code_scanner</span> Escanear QR
+                        </button>
+                        <button class="btn-main btn-secondary-action" onclick="showManualPayModal()">
+                            <span class="material-icons-round">dialpad</span> Pago Manual
+                        </button>
+                    </div>
+
+                    <div id="qr-reader-container">
+                        <div id="qr-interactive"></div>
+                        <button class="btn-main" style="background:#E74C3C; padding: 6px; font-size:12px;" onclick="stopQRScanner()">Cancelar Escaneo</button>
+                    </div>
+
+                    <div id="manualBusForm" style="display: none; flex-direction: column; gap: 8px; margin-top: 10px;">
+                        <input type="text" id="manualBusId" class="input-custom" placeholder="ID del bus (Ej: TR-090)">
+                        <button class="btn-main" onclick="processManualBusPay()">Confirmar ID</button>
+                    </div>
+                </div>
+
+                <div class="card-white" style="border-top: 2px dashed #CBD5E0;">
+                    <p style="font-size: 12px; font-weight: bold; color: #E74C3C;"><span class="material-icons-round" style="font-size: 16px;">report_problem</span> Plan B: Chofer No Afiliado</p>
+                    <input type="number" id="driverFare" class="input-custom" placeholder="Monto (Bs.)">
+                    <input type="number" id="driverPhone" class="input-custom" placeholder="Teléfono">
+                    <input type="number" id="driverCid" class="input-custom" placeholder="Cédula">
+                    <input type="text" id="driverBank" class="input-custom" placeholder="Código Banco (Ej: 0102)">
+                    <button class="btn-main" style="background-color: #2C3E50;" onclick="processPlanBPayment()">DISPARAR PAGO MÓVIL</button>
+                </div>
+            </div>
+
+            <div id="view-wallet" class="view-section">
+                <div class="balance-card">
+                    <p>Saldo para Viajes</p>
+                    <div class="balance-amount">Bs. <span class="global-balance">0.00</span></div>
+                </div>
+                
+                <div class="card-white">
+                    <h4 style="font-size: 15px;">Recargar Billetera Digital</h4>
+                    <p style="font-size: 12px; color: #718096; margin-bottom: 5px;">Toca una pasarela para ver sus datos:</p>
+                    
+                    <div class="methods-grid">
+                        <button class="btn-method method-pm" onclick="loadPagoMovilData()">
+                            <div class="icon-wrap"><span class="material-icons-round">phone_android</span></div>Pago Móvil
+                        </button>
+                        
+                        <button class="btn-method method-trans" onclick="loadTransferenciaData()">
+                            <div class="icon-wrap"><span class="material-icons-round">account_balance</span></div>Transferencia Bancaria
+                        </button>
+                        
+                        <button class="btn-method method-paypal" onclick="loadSingleData('PayPal', 'pagos@pasajefacil.com', 'Correo Cuenta Empresa')">
+                            <div class="icon-wrap"><span class="material-icons-round">payments</span></div>PayPal (USD)
+                        </button>
+                        
+                        <button class="btn-method method-binance" onclick="loadSingleData('Binance Pay', '250987654', 'Binance ID de Pago')">
+                            <div class="icon-wrap"><span class="material-icons-round">currency_bitcoin</span></div>Binance Pay
+                        </button>
+                        
+                        <button class="btn-method method-zinli" onclick="loadSingleData('Zinli', 'recargas@pasajefacil.com', 'Correo Registrado')">
+                            <div class="icon-wrap"><span class="material-icons-round">wallet</span></div>Zinli
+                        </button>
+                    </div>
+
+                    <div id="dynamicDepositForm" class="deposit-form-box">
+                        <div style="font-weight: 800; font-size: 14px; color: var(--secondary); text-transform: uppercase;" id="selectedMethodTitle">Pasarela</div>
+                        <div class="info-transfer-data" id="dataFieldsContainer"></div>
+                        
+                        <input type="number" id="rechargeAmount" class="input-custom" placeholder="Monto transferido (Bs.)">
+                        <input type="text" id="rechargeRef" class="input-custom" placeholder="Número de Referencia Bancaria o ID">
+                        
+                        <div class="file-upload-wrapper">
+                            <label for="captureFile" class="file-upload-label" id="uploadLabelText">
+                                <span class="material-icons-round">image</span> Cargar Capture / Comprobante
+                            </label>
+                            <input type="file" id="captureFile" class="input-file-hidden" accept="image/*" onchange="handleFileSelection(this)">
+                        </div>
+                        
+                        <button class="btn-main btn-yellow" onclick="processRecharge()">VALIDAR MI RECARGA</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-notifications" class="view-section">
+                <h4 style="font-size: 15px; color: var(--secondary); margin-bottom: 5px;">Alertas del Sistema</h4>
+                <p style="font-size: 12px; color:#718096; margin-bottom: 5px;">Selecciona un ticket para abrir el chat de soporte:</p>
+                <div id="notificationsContainer" style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05);"></div>
+            </div>
+
+            <div id="view-chat-support" class="view-section" style="display:none; height: 100%;">
+                <div style="display:flex; align-items:center; gap:8px; background:var(--secondary); color:white; padding: 10px; border-radius:10px 10px 0 0;">
+                    <button style="background:transparent; border:none; color:white; cursor:pointer;" onclick="switchTab('notifications')">
+                        <span class="material-icons-round">arrow_back</span>
+                    </button>
+                    <div>
+                        <h4 style="font-size:14px;" id="chatSupportTitle">Soporte Conciliación</h4>
+                        <span style="font-size:10px; color:#48BB78; display:flex; align-items:center; gap:3px;">
+                            <span style="width:6px; height:6px; background:#48BB78; border-radius:50%;"></span> Operador en línea
+                        </span>
+                    </div>
+                </div>
+
+                <div class="chat-container">
+                    <div class="chat-messages-area" id="chatMessagesContent"></div>
+                    <div class="chat-input-bar">
+                        <input type="text" id="chatMessageInput" class="input-chat-message" placeholder="Escribe un mensaje al soporte...">
+                        <button class="btn-send-chat" onclick="sendCustomUserMessage()">
+                            <span class="material-icons-round" style="font-size:18px;">send</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-profile" class="view-section">
+                <div class="card-white" style="text-align: center;">
+                    <div class="profile-avatar-container" onclick="triggerAvatarUpload()">
+                        <div class="profile-avatar" id="userAvatarDisplay">G</div>
+                        <div class="avatar-edit-badge">
+                            <span class="material-icons-round" style="font-size: 14px;">photo_camera</span>
+                        </div>
+                    </div>
+                    <input type="file" id="avatarFileInput" class="input-file-hidden" accept="image/*" onchange="loadUserAvatar(this)">
+
+                    <h3 style="color: var(--secondary);" id="userHeaderName">Cargando...</h3>
+                    <p style="font-size: 12px; color: #718096;" id="userHeaderLocation">...</p>
+                    
+                    <div>
+                        <span class="user-micro-id" id="userHeaderId">ID: PF-00000</span>
+                    </div>
+                    
+                    <div style="border-top: 1px dashed #E2E8F0; padding-top: 15px; display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+                        <div class="profile-form-group">
+                            <label>ID de Pasajero / Cédula</label>
+                            <input type="text" id="profileIdInput" class="input-custom">
+                        </div>
+
+                        <div class="profile-form-group">
+                            <label>Nombre Completo</label>
+                            <input type="text" id="profileNameInput" class="input-custom">
+                        </div>
+
+                        <div class="profile-form-group">
+                            <label>Correo Electrónico</label>
+                            <input type="email" id="profileEmailInput" class="input-custom">
+                        </div>
+
+                        <div class="profile-form-group">
+                            <label>Ubicación / Ciudad</label>
+                            <input type="text" id="profileLocationInput" class="input-custom">
+                        </div>
+
+                        <button class="btn-main btn-yellow" style="margin-top: 5px;" onclick="saveProfileData()">
+                            <span class="material-icons-round">save</span> GUARDAR CAMBIOS
+                        </button>
+                    </div>
+
+                    <button class="btn-logout" onclick="logoutApp()">
+                        <span class="material-icons-round">logout</span> CERRAR SESIÓN
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="screen-overlay success-screen" id="successScreen">
+            <span class="material-icons-round overlay-icon">check_circle</span>
+            <h2 id="successTitle">¡PAGO VERIFICADO!</h2>
+            <div class="receipt-card">
+                <div class="receipt-row"><strong>Método:</strong> <span id="recMetodo"></span></div>
+                <div class="receipt-row"><strong>Referencia:</strong> <span id="recRef"></span></div>
+                <div class="receipt-row"><strong>Destino:</strong> <span id="recDest"></span></div>
+                <div class="receipt-row"><strong>Monto:</strong> <span id="recMonto"></span></div>
+                <p id="receiptCaptureIndicator" style="font-size:11px; margin-top:5px; text-align:center; color:#4A5568;"></p>
+            </div>
+            <button class="btn-main" style="margin-top: 25px; background: rgba(0,0,0,0.2);" onclick="closeOverlay()">CERRAR</button>
+        </div>
+
+        <div class="screen-overlay error-screen" id="errorScreen">
+            <span class="material-icons-round overlay-icon">cancel</span>
+            <h2>ERROR EN LA OPERACIÓN</h2>
+            <p id="errorMsg" style="margin-top: 10px; font-size: 13px;"></p>
+            <button class="btn-main" style="margin-top: 25px; background: rgba(255,255,255,0.2);" onclick="closeOverlay()">VOLVER</button>
+        </div>
+
+        <div class="nav-bar">
+            <div class="nav-item active" id="btn-travel" onclick="switchTab('travel')"><span class="material-icons-round">directions_bus</span>Viajar</div>
+            <div class="nav-item" id="btn-wallet" onclick="switchTab('wallet')"><span class="material-icons-round">account_balance_wallet</span>Billetera</div>
+            <div class="nav-item" id="btn-notifications" onclick="switchTab('notifications')"><span class="material-icons-round">notifications</span>Alertas</div>
+            <div class="nav-item" id="btn-profile" onclick="switchTab('profile')"><span class="material-icons-round">person</span>Perfil</div>
+        </div>
+    </div>
+
+    <script>
+        let html5QrcodeScanner = null;
+        let selectedMethodGlobal = "";
+        let globalFileNameUploaded = "";
+        let activeNotificationIndexGlobal = null;
+
+        // Reloj del Dispositivo
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('phone-clock').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }, 1000);
+
+        /* --- MOTOR DE AUTENTICACIÓN ACTUALIZADO CON EMAIL --- */
+        
+        if (!localStorage.getItem('pf_db_usuarios')) {
+            const defaultUsers = {
+                "gabriel": {
+                    username: "gabriel",
+                    email: "gabriel@pasajefacil.com",
+                    password: "123",
+                    name: "Gabriel López",
+                    location: "San Joaquín, Carabobo",
+                    idPasajero: "PF-10943",
+                    saldo: "210.00",
+                    avatar: "",
+                    notificaciones: [
+                        { titulo: "¡Sesión Iniciada!", mensaje: "Ecosistema PasajeFácil activo para Gabriel López.", icono: "bolt", hora: "12:10", tipo: "bienvenida" }
+                    ]
+                }
+            };
+            localStorage.setItem('pf_db_usuarios', JSON.stringify(defaultUsers));
+        }
+
+        function toggleAuthForms(showRegister) {
+            document.getElementById('loginFormBox').style.display = showRegister ? 'none' : 'flex';
+            document.getElementById('registerFormBox').style.display = showRegister ? 'flex' : 'none';
+        }
+
+        // Registro con Validación de Email
+        function handleRegister() {
+            const name = document.getElementById('regName').value.trim();
+            const email = document.getElementById('regEmail').value.trim().toLowerCase();
+            const username = document.getElementById('regUsername').value.trim().toLowerCase();
+            const pass = document.getElementById('regPassword').value.trim();
+            const loc = document.getElementById('regLocation').value.trim();
+
+            if(!name || !email || !username || !pass || !loc) {
+                showError("Por favor completa todos los campos del registro.");
+                return;
+            }
+
+            // Validación simple de formato de correo electrónico
+            if(!email.includes('@') || !email.includes('.')) {
+                showError("Por favor ingresa un correo electrónico válido.");
+                return;
+            }
+
+            let db = JSON.parse(localStorage.getItem('pf_db_usuarios'));
+
+            // Verificar si el usuario ya existe
+            if(db[username]) {
+                showError("El nombre de usuario ya está registrado. Elige otro.");
+                return;
+            }
+
+            // Verificar si el correo ya está en uso
+            for (let user in db) {
+                if (db[user].email === email) {
+                    showError("Este correo electrónico ya está asociado a otra cuenta.");
+                    return;
+                }
+            }
+
+            const generatedId = "PF-" + Math.floor(10000 + Math.random() * 90000);
+
+            db[username] = {
+                username: username,
+                email: email,
+                password: pass,
+                name: name,
+                location: loc,
+                idPasajero: generatedId,
+                saldo: "50.00", 
+                avatar: "",
+                notificaciones: [
+                    { titulo: "¡Cuenta Creada con Éxito!", mensaje: "Se te han asignado Bs. 50.00 de saldo inicial.", icono: "card_membership", hora: "12:10", tipo: "bienvenida" }
+                ]
+            };
+
+            localStorage.setItem('pf_db_usuarios', JSON.stringify(db));
+            alert("¡Registro Exitoso! Ya puedes iniciar sesión.");
+            
+            // Limpiar campos de registro
+            document.getElementById('regName').value = "";
+            document.getElementById('regEmail').value = "";
+            document.getElementById('regUsername').value = "";
+            document.getElementById('regPassword').value = "";
+            
+            toggleAuthForms(false);
+        }
+
+        // Login Dual (Permite entrar con username O con email)
+        function handleLogin() {
+            const inputLogin = document.getElementById('loginUsername').value.trim().toLowerCase();
+            const pass = document.getElementById('loginPassword').value.trim();
+
+            let db = JSON.parse(localStorage.getItem('pf_db_usuarios'));
+            let targetUserKey = null;
+
+            // Buscar coincidencia directa por Username
+            if (db[inputLogin]) {
+                targetUserKey = inputLogin;
+            } else {
+                // Si no coincide con un username, buscar si coincide con un Email
+                for (let user in db) {
+                    if (db[user].email === inputLogin) {
+                        targetUserKey = user;
+                        break;
+                    }
+                }
+            }
+
+            // Validar credenciales finales encontradas
+            if(targetUserKey && db[targetUserKey].password === pass) {
+                localStorage.setItem('pf_current_session', targetUserKey);
+                document.getElementById('authScreenContainer').style.display = 'none';
+                document.getElementById('loginUsername').value = "";
+                document.getElementById('loginPassword').value = "";
+                switchTab('travel');
+            } else {
+                showError("El usuario/correo o la contraseña son incorrectos.");
+            }
+        }
+
+        function checkSession() {
+            const activeUser = localStorage.getItem('pf_current_session');
+            if (activeUser) {
+                document.getElementById('authScreenContainer').style.display = 'none';
+                renderUI();
+            } else {
+                document.getElementById('authScreenContainer').style.display = 'flex';
+            }
+        }
+
+        /* --- INTERFAZ DINÁMICA --- */
+        function renderUI() {
+            const activeUser = localStorage.getItem('pf_current_session');
+            if(!activeUser) return;
+
+            let db = JSON.parse(localStorage.getItem('pf_db_usuarios'));
+            let userData = db[activeUser];
+
+            const saldoFormateado = parseFloat(userData.saldo).toFixed(2);
+            document.querySelectorAll('.global-balance').forEach(el => el.innerText = saldoFormateado);
+            
+            document.getElementById('userHeaderId').innerText = "ID: " + userData.idPasajero;
+            document.getElementById('userHeaderName').innerText = userData.name;
+            document.getElementById('userHeaderLocation').innerText = userData.location;
+            
+            document.getElementById('profileIdInput').value = userData.idPasajero;
+            document.getElementById('profileNameInput').value = userData.name;
+            document.getElementById('profileEmailInput').value = userData.email || "";
+            document.getElementById('profileLocationInput').value = userData.location;
+
+            const avatarEl = document.getElementById('userAvatarDisplay');
+            if (userData.avatar) {
+                avatarEl.style.backgroundImage = `url('${userData.avatar}')`;
+                avatarEl.innerText = ""; 
+            } else {
+                avatarEl.style.backgroundImage = "none";
+                avatarEl.innerText = userData.name.charAt(0).toUpperCase();
+            }
+
+            renderNotifications(userData.notificaciones);
+        }
+
+        function switchTab(view) {
+            stopQRScanner();
+            document.querySelectorAll('.view-section').forEach(s => s.style.display = 'none');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            const targetView = document.getElementById(`view-${view}`);
+            if(targetView) targetView.style.display = 'flex';
+            
+            const targetBtn = document.getElementById(`btn-${view}`);
+            if(targetBtn) targetBtn.classList.add('active');
+            
+            document.getElementById('dynamicDepositForm').style.display = 'none';
+            document.getElementById('manualBusForm').style.display = 'none';
+            renderUI();
+        }
+
+        /* --- CONTROLADORES DE PERFIL EN SESIÓN --- */
+        function triggerAvatarUpload() {
+            document.getElementById('avatarFileInput').click();
+        }
+
+        function loadUserAvatar(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const activeUser = localStorage.getItem('pf_current_session');
+                    let db = JSON.parse(localStorage.getItem('pf_db_usuarios'));
+                    
+                    db[activeUser].avatar = e.target.result;
+                    localStorage.setItem('pf_db_usuarios', JSON.stringify(db));
+                    renderUI(); 
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function saveProfileData() {
+            const activeUser = localStorage.getItem('pf_current_session');
+            let db = JSON.parse(localStorage.getItem('pf_db_usuarios'));
+
+            const idInput = document.getElementById('profileIdInput').value.trim();
+            const nameInput = document.getElementById('profileNameInput').value.trim();
+            const emailInput = document.getElementById('profileEmailInput').value.trim().toLowerCase();
+            const locInput = document.getElementById('profileLocationInput').value.trim();
+
+            if (!idInput || !nameInput || !emailInput || !locInput) {
+                showError("Todos los campos del perfil son obligatorios.");
+                return;
+            }
+
+            db[activeUser].idPasajero = idInput;
+            db[activeUser].name = nameInput;
+            db[activeUser].email = emailInput;
+            db[activeUser].location = locInput;
+
+            localStorage.setItem('pf_db_usuarios', JSON.stringify(db));
+            alert("¡Perfil guardado correctamente!");
+            renderUI();
+        }
+
+        function logoutApp() {
+            if(confirm("¿Estás seguro de que deseas cerrar sesión?")) {
+                localStorage.removeItem('pf_current_session');
+                checkSession();
+            }
+        }
+
+        /* --- HISTORIAL Y CHAT --- */
+        function renderNotifications(notifs) {
+            const container = document.getElementById('notificationsContainer');
+            container.innerHTML = "";
+
+            if(!notifs || notifs.length === 0) {
+                container.innerHTML = `<div style="padding:20px; text-align:center; color:#A0AEC0; font-size:13px;">No tienes alertas en tu historial</div>`;
+                return;
+            }
+
+            notifs.forEach((n, index) => {
+                container.innerHTML += `
+                    <div class="notification-item" onclick="openNotificationAsChat(${index})">
+                        <div class="notification-icon"><span class="material-icons-round">${n.icono || 'notifications'}</span></div>
+                        <div style="flex:1; margin-left:10px;">
+                            <h5 style="font-size:13px; font-weight:700; color:var(--secondary);">${n.titulo}</h5>
+                            <p style="font-size:11px; color:#718096; margin-top:2px;">${n.mensaje}</p>
+                            <span style="font-size:10px; color:#3182CE; font-weight:bold; display:block; margin-top:5px;">💬 Abrir hilo de chat</span>
+                        </div>
+                        <span style="font-size:10px; color:#A0AEC0;">${n.hora}</span>
+                    </div>`;
+            });
+        }
+
+        function addNotification(t, m, i, tipo = 'viaje') {
+            const activeUser = localStorage.getItem('pf_current_session');
+            let db = JSON.parse(localStorage.getItem('pf_db_usuarios'));
+            
+            db[activeUser].notificaciones.unshift({ 
+                titulo: t, 
+                mensaje: m, 
+                icono: i, 
+                hora: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+                tipo: tipo 
+            });
+            localStorage.setItem('pf_db_usuarios', JSON.stringify(db));
+        }
+
+        function openNotificationAsChat(index) {
+            const activeUser = localStorage.getItem('pf_current_session');
+            let db = JSON.parse(localStorage.getItem('pf_db_usuarios'));
+            const alerta = db[activeUser].notificaciones[index];
+            activeNotificationIndexGlobal = index;
+
+            document.getElementById('chatSupportTitle').innerText = alerta.titulo;
+            document.querySelectorAll('.view-section').forEach(s => s.style.display = 'none');
+            document.getElementById('view-chat-support').style.display = 'flex';
+
+            const area = document.getElementById('chatMessagesContent');
+            area.innerHTML = `
+                <div class="chat-bubble system-agent">
+                    <strong>Sistema PasajeFácil:</strong><br>
+                    Hola. Canal indexado a tu alerta: <em>"${alerta.titulo}"</em>.<br><br>
+                    <strong>Detalle:</strong> ${alerta.mensaje}
+                    <span class="chat-meta-time">${alerta.hora} • Leído</span>
+                </div>
+            `;
+            area.scrollTop = area.scrollHeight;
+        }
+
+        function sendCustomUserMessage() {
+            const input = document.getElementById('chatMessageInput');
+            const mensaje = input.value.trim();
+            if(!mensaje) return;
+
+            const area = document.getElementById('chatMessagesContent');
+            const now = new Date();
+            const horaStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+            area.innerHTML += `
+                <div class="chat-bubble user-client">
+                    ${mensaje}
+                    <span class="chat-meta-time">${horaStr} • Entregado</span>
+                </div>`;
+            
+            input.value = "";
+            area.scrollTop = area.scrollHeight;
+
+            setTimeout(() => {
+                area.innerHTML += `
+                    <div class="chat-bubble system-agent">
+                        <span style="color:#2B6CB0; font-weight:bold;">[Soporte]</span>: Requerimiento anexado a tu bitácora digital. Seguimos monitoreando tu cuenta.
+                        <span class="chat-meta-time">${horaStr}</span>
+                    </div>`;
+                area.scrollTop = area.scrollHeight;
+            }, 1500);
+        }
+
+        /* --- SISTEMA DE COPIADO --- */
+        function cleanAndCopy(textToCopy, identityLabel) {
+            let cleaned = textToCopy.replace(/[\.\-\s\(\)]/g, '');
+            if (textToCopy.includes('@')) { cleaned = textToCopy.trim(); }
+            navigator.clipboard.writeText(cleaned).then(() => {
+                alert(`¡${identityLabel} copiado de forma limpia!\nTexto: ${cleaned}`);
+            });
+        }
+
+        function loadPagoMovilData() {
+            selectedMethodGlobal = "Pago Móvil";
+            document.getElementById('selectedMethodTitle').innerText = "Pasarela: Pago Móvil";
+            document.getElementById('dataFieldsContainer').innerHTML = `
+                <div class="data-row-item">
+                    <div class="data-text-area">
+                        <span class="data-label-micro">Teléfono Destino</span>
+                        <span class="data-value-main">0412-1234567</span>
+                    </div>
+                    <button class="btn-copy-action" onclick="cleanAndCopy('0412-1234567', 'Teléfono')"><span class="material-icons-round" style="font-size:14px;">content_copy</span></button>
+                </div>
+                <div class="data-row-item">
+                    <div class="data-text-area">
+                        <span class="data-label-micro">Cédula de Identidad</span>
+                        <span class="data-value-main">V-28.456.123</span>
+                    </div>
+                    <button class="btn-copy-action" onclick="cleanAndCopy('28456123', 'Cédula')"><span class="material-icons-round" style="font-size:14px;">content_copy</span></button>
+                </div>
+                <div class="data-row-item">
+                    <div class="data-text-area">
+                        <span class="data-label-micro">Código de Banco</span>
+                        <span class="data-value-main">0102 (BDV)</span>
+                    </div>
+                    <button class="btn-copy-action" onclick="cleanAndCopy('0102', 'Código de Banco')"><span class="material-icons-round" style="font-size:14px;">content_copy</span></button>
+                </div>
+            `;
+            openDepositForm();
+        }
+
+        function loadTransferenciaData() {
+            selectedMethodGlobal = "Transferencia";
+            document.getElementById('selectedMethodTitle').innerText = "Pasarela: Transferencia Bancaria";
+            document.getElementById('dataFieldsContainer').innerHTML = `
+                <div class="data-row-item">
+                    <div class="data-text-area">
+                        <span class="data-label-micro">Número de Cuenta</span>
+                        <span class="data-value-main">0105-0000-0000-0000-0000</span>
+                    </div>
+                    <button class="btn-copy-action" onclick="cleanAndCopy('01050000000000000000', 'Número de Cuenta')"><span class="material-icons-round" style="font-size:14px;">content_copy</span></button>
+                </div>
+                <div class="data-row-item">
+                    <div class="data-text-area">
+                        <span class="data-label-micro">RIF Jurídico</span>
+                        <span class="data-value-main">J-50012345-0</span>
+                    </div>
+                    <button class="btn-copy-action" onclick="cleanAndCopy('J500123450', 'RIF')"><span class="material-icons-round" style="font-size:14px;">content_copy</span></button>
+                </div>
+            `;
+            openDepositForm();
+        }
+
+        function loadSingleData(metodo, valor, etiqueta) {
+            selectedMethodGlobal = metodo;
+            document.getElementById('selectedMethodTitle').innerText = "Pasarela: " + metodo;
+            document.getElementById('dataFieldsContainer').innerHTML = `
+                <div class="data-row-item">
+                    <div class="data-text-area">
+                        <span class="data-label-micro">${etiqueta}</span>
+                        <span class="data-value-main">${valor}</span>
+                    </div>
+                    <button class="btn-copy-action" onclick="cleanAndCopy('${valor}', '${metodo}')"><span class="material-icons-round" style="font-size:14px;">content_copy</span></button>
+                </div>
+            `;
+            openDepositForm();
+        }
+
+        function openDepositForm() {
+            document.getElementById('rechargeAmount').value = "";
+            document.getElementById('rechargeRef').value = "";
+            resetUploadInput();
+            document.getElementById('dynamicDepositForm').style.display = 'flex';
+        }
+
+        function handleFileSelection(input) {
+            if (input.files && input.files[0]) {
+                globalFileNameUploaded = input.files[0].name;
+                const label = document.getElementById('uploadLabelText');
+                label.style.backgroundColor = "#E6FFFA";
+                label.style.borderColor = "#319795";
+                label.style.color = "#234E52";
+                label.innerHTML = `<span class="material-icons-round" style="color:#319795;">check_circle</span> ${globalFileNameUploaded}`;
+            }
+        }
+
+        function resetUploadInput() {
+            globalFileNameUploaded = "";
+            if(document.getElementById('captureFile')) document.getElementById('captureFile').value = "";
+            const label = document.getElementById('uploadLabelText');
+            if(label) {
+                label.style.backgroundColor = "#EDF2F7";
+                label.style.borderColor = "#CBD5E0";
+                label.style.color = "#4A5568";
+                label.innerHTML = `<span class="material-icons-round">image</span> Cargar Capture / Comprobante`;
+            }
+        }
+
+        /* --- OPERACIONES --- */
+        function processRecharge() {
+            const amountInput = document.getElementById('rechargeAmount').value;
+            const refInput = document.getElementById('rechargeRef').value.trim();
+
+            if (!amountInput || !refInput) { showError("Ingresa el monto y la referencia obligatoria."); return; }
+            if (!globalFileNameUploaded) { showError("Por favor, adjunta el capture visual."); return; }
+
+            const monto = parseFloat(amountInput);
+            const activeUser = localStorage.getItem('pf_current_session');
+            let db = JSON.parse(localStorage.getItem('pf_db_usuarios'));
+
+            let saldoActual = parseFloat(db[activeUser].saldo);
+            saldoActual += monto;
+            db[activeUser].saldo = saldoActual.toFixed(2);
+            localStorage.setItem('pf_db_usuarios', JSON.stringify(db));
+
+            addNotification("Fondo Acreditado", `Bs. ${monto.toFixed(2)} cargados vía ${selectedMethodGlobal}. Ref: ${refInput}.`, "account_balance_wallet", "recarga");
+            document.getElementById('dynamicDepositForm').style.display = 'none';
+
+            document.getElementById('successTitle').innerText = "¡FONDO RECEPTADO!";
+            document.getElementById('recMetodo').innerText = "Recarga vía " + selectedMethodGlobal;
+            document.getElementById('recDest').innerText = "Billetera PasajeFácil";
+            document.getElementById('recRef').innerText = refInput;
+            document.getElementById('recMonto').innerText = `Bs. ${monto.toFixed(2)}`;
+            
+            document.getElementById('receiptCaptureIndicator').innerHTML = `<span class="material-icons-round" style="font-size:12px; color:var(--success); vertical-align:middle;">attachment</span> Comprobante: <strong>${globalFileNameUploaded}</strong>`;
+            document.getElementById('successScreen').style.display = 'flex';
+            resetUploadInput();
+        }
+
+        function processPayment(metodo, destino) {
+            const fareInput = document.getElementById('travelFare').value;
+            const costo = parseFloat(fareInput);
+            if (isNaN(costo) || costo <= 0) { showError("Monto inválido."); return; }
+
+            const activeUser = localStorage.getItem('pf_current_session');
+            let db = JSON.parse(localStorage.getItem('pf_db_usuarios'));
+            let saldo = parseFloat(db[activeUser].saldo);
+
+            if (saldo >= costo) {
+                saldo -= costo;
+                db[activeUser].saldo = saldo.toFixed(2);
+                localStorage.setItem('pf_db_usuarios', JSON.stringify(db));
+
+                const ref = "PF-" + Math.floor(10000000 + Math.random() * 90000000);
+                addNotification("Viaje Confirmado", `Monto cobrado: Bs. ${costo.toFixed(2)} vía ${metodo}.`, "local_activity", "viaje");
+
+                document.getElementById('successTitle').innerText = "¡VIAJE CONFIRMADO!";
+                document.getElementById('recMetodo').innerText = metodo;
+                document.getElementById('recDest').innerText = destino;
+                document.getElementById('recRef').innerText = ref;
+                document.getElementById('recMonto').innerText = `Bs. ${costo.toFixed(2)}`;
+                document.getElementById('receiptCaptureIndicator').innerText = "";
+                document.getElementById('successScreen').style.display = 'flex';
+            } else {
+                showError("Saldo insuficiente en tu balance digital.");
+            }
+        }
+
+        function startQRScanner() {
+            document.getElementById('manualBusForm').style.display = 'none';
+            document.getElementById('qr-reader-container').style.display = 'flex';
+            html5QrcodeScanner = new Html5Qrcode("qr-interactive");
+            html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 15, qrbox: 220 }, (text) => {
+                stopQRScanner();
+                processPayment("Escaneo QR", `Control Bus: ${text.toUpperCase()}`);
+            }, () => {});
+        }
+
+        function stopQRScanner() {
+            document.getElementById('qr-reader-container').style.display = 'none';
+            if (html5QrcodeScanner) { html5QrcodeScanner.stop().then(() => html5QrcodeScanner = null).catch(() => html5QrcodeScanner = null); }
+        }
+
+        function showManualPayModal() {
+            const form = document.getElementById('manualBusForm');
+            form.style.display = form.style.display === 'none' ? 'flex' : 'none';
+        }
+
+        function processManualBusPay() {
+            const val = document.getElementById('manualBusId').value.trim().toUpperCase();
+            if(!val) return;
+            processPayment("Control Manual", `Bus Control: ${val}`);
+            document.getElementById('manualBusId').value = "";
+            document.getElementById('manualBusForm').style.display = 'none';
+        }
+
+        function processPlanBPayment() {
+            const montoBase = parseFloat(document.getElementById('driverFare').value);
+            if (isNaN(montoBase) || montoBase <= 0) { showError("Coloque un monto válido."); return; }
+            const total = montoBase + 1.50;
+
+            const activeUser = localStorage.getItem('pf_current_session');
+            let db = JSON.parse(localStorage.getItem('pf_db_usuarios'));
+            let saldo = parseFloat(db[activeUser].saldo);
+
+            if (saldo >= total) {
+                saldo -= total;
+                db[activeUser].saldo = saldo.toFixed(2);
+                localStorage.setItem('pf_db_usuarios', JSON.stringify(db));
+
+                addNotification("Plan B Emitido", `Pago Móvil directo por Bs. ${montoBase.toFixed(2)} al chofer.`, "flash_on", "viaje");
+
+                document.getElementById('successTitle').innerText = "¡PLAN B CONFIRMADO!";
+                document.getElementById('recMetodo').innerText = "Pago Móvil Directo (Plan B)";
+                document.getElementById('recDest').innerText = `Chofer CI: ${document.getElementById('driverCid').value}`;
+                document.getElementById('recRef').innerText = "PM-" + Math.floor(100000 + Math.random() * 900000);
+                document.getElementById('recMonto').innerText = `Bs. ${total.toFixed(2)}`;
+                document.getElementById('receiptCaptureIndicator').innerText = "";
+                document.getElementById('successScreen').style.display = 'flex';
+            } else {
+                showError("Saldo insuficiente para cubrir pasaje + comisión.");
+            }
+        }
+
+        function showError(m) { document.getElementById('errorMsg').innerText = m; document.getElementById('errorScreen').style.display = 'flex'; }
+        function closeOverlay() { document.getElementById('successScreen').style.display = 'none'; document.getElementById('errorScreen').style.display = 'none'; renderUI(); }
+
+        // Inicializar revisión de sesión al cargar
+        checkSession();
+    </script>
+</body>
+</html>
